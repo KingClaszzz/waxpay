@@ -1,0 +1,25 @@
+// Visual check of hover states (desktop, mouse). Usage: node scripts/hover-check.mjs <dir>
+import { chromium } from "playwright-core";
+const out = process.argv[2] ?? ".";
+const b = await chromium.launch({ channel: "msedge", headless: true });
+const p = await b.newPage({ viewport: { width: 1366, height: 900 } });
+const errors = [];
+p.on("pageerror", (e) => errors.push(e.message));
+await p.goto("http://localhost:4173/");
+await p.waitForTimeout(800);
+await p.locator(".tile.wide").scrollIntoViewIfNeeded();
+await p.locator(".tile.wide").hover();
+await p.waitForTimeout(500);
+await p.screenshot({ path: `${out}/hover-tile.png` });
+await p.goto("http://localhost:4173/#/app");
+await p.getByRole("button", { name: /Create test wallets/ }).click();
+await p.getByText("Bonjour").waitFor({ timeout: 45000 });
+await p.waitForTimeout(2500);
+await p.locator(".kpi").first().hover();
+await p.waitForTimeout(400);
+await p.screenshot({ path: `${out}/hover-kpi.png`, clip: { x: 248, y: 0, width: 1118, height: 300 } });
+await p.locator(".list .row").first().hover();
+await p.waitForTimeout(400);
+await p.screenshot({ path: `${out}/hover-row.png`, clip: { x: 900, y: 240, width: 466, height: 200 } });
+console.log("errors:", errors.length ? errors : "none");
+await b.close();

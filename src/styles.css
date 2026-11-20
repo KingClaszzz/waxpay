@@ -307,3 +307,60 @@ textarea.field { width: 100%; min-height: 84px; padding: 10px 12px; border-radiu
 .dots i:nth-child(2) { animation-delay: .15s; }
 .dots i:nth-child(3) { animation-delay: .3s; }
 @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: .5; } 40% { transform: translateY(-4px); opacity: 1; } }
+
+/* ---------- v4: hover & micro-interactions (mouse/trackpad only) ---------- */
+.card, .step, .tile, .kpi, .panel, .option, .row, .avatar, .bubble, .confirm, .qr, .logo-mark,
+.lnav-links a.text, .side-link, .side-link svg, .step-n, .tile .big, .key, .seg, .chip, .hero-proof span, .lfoot span {
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .2s, background-color .2s, color .2s, opacity .2s;
+}
+@media (hover: hover) and (pointer: fine) {
+  /* brand */
+  .logo:hover .logo-mark { transform: translateX(2px) skewX(-6deg); }
+  .logo:hover .logo-pay { color: var(--accent); }
+
+  /* landing nav */
+  .lnav-links a.text { position: relative; }
+  .lnav-links a.text::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 4px; height: 1.5px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
+  .lnav-links a.text:hover::after { transform: scaleX(1); }
+
+  /* hero */
+  .hero h1 em { background: linear-gradient(transparent 82%, color-mix(in srgb, var(--accent) 22%, transparent) 0) no-repeat 0 0 / 0% 100%; transition: background-size .6s var(--ease); }
+  .hero h1:hover em { background-size: 100% 100%; }
+  .hero-proof span { cursor: default; }
+  .hero-proof span:hover { color: var(--ink); }
+  .demo-card:hover { transform: translateY(-4px) rotate(-.4deg); box-shadow: 0 1px 0 #1412100a, 0 24px 48px -20px #14121040; }
+
+  /* landing cards */
+  .step:hover, .tile:hover { transform: translateY(-4px); border-color: var(--rule-2); box-shadow: 0 1px 0 #1412100a, 0 18px 40px -18px #14121038; }
+  .step:hover .step-n { color: var(--ink); letter-spacing: .08em; }
+  .tile:hover .big { color: var(--accent); }
+  .tile:hover h3, .step:hover h3 { color: var(--accent); }
+  .final-in .btn.primary:hover:not(:disabled) { box-shadow: 0 10px 30px -10px var(--accent); }
+  .lfoot span:hover { color: var(--ink); }
+
+  /* dashboard */
+  .side-link:hover svg { transform: translateX(2px) scale(1.08); }
+  .side-link.active:hover { box-shadow: 0 1px 0 #1412100a, 0 10px 24px -14px #14121040; }
+  .kpi:hover { transform: translateY(-3px); border-color: var(--rule-2); box-shadow: 0 1px 0 #1412100a, 0 16px 32px -18px #14121038; }
+  .kpi:hover .kpi-value { color: var(--accent); }
+  .panel:hover { border-color: var(--rule-2); }
+  .row:hover { background: var(--paper); }
+  .row:hover .avatar { transform: scale(1.08); }
+  .row .btn.quiet { opacity: .75; }
+  .row:hover .btn.quiet { opacity: 1; background: var(--accent-soft); color: var(--accent); }
+  .bubble.from-bot:hover { background: color-mix(in srgb, var(--paper-2) 80%, var(--rule-2)); }
+  .confirm:hover { border-color: var(--ink-2); box-shadow: 0 12px 28px -18px #14121040; }
+  .chip:hover { background: var(--accent-soft); transform: translateY(-1px); }
+  .seg:hover:not(.on) { border-color: var(--ink-2); color: var(--ink); }
+  .chat-form input:hover:not(:focus), .text-input:hover:not(:focus) { border-color: var(--ink-2); }
+  .option:hover { border-color: var(--ink-2); background: var(--paper); }
+  .key:hover { transform: translateY(-1px); border-color: var(--rule-2); box-shadow: 0 6px 14px -10px #14121040; }
+  .qr:hover { transform: scale(1.02); box-shadow: 0 14px 30px -18px #14121050; }
+  .icon-btn:hover:not(:disabled) svg { transform: scale(1.1); }
+  .icon-btn svg { transition: transform .2s var(--ease); }
+  .receipt:hover { color: var(--ink-2); }
+}
+@media (prefers-color-scheme: dark) and (hover: hover) and (pointer: fine) {
+  .demo-card:hover, .step:hover, .tile:hover, .kpi:hover, .confirm:hover, .qr:hover { box-shadow: 0 1px 0 #0000004d, 0 20px 44px -20px #000000cc; }
+  .row:hover { background: var(--paper-2); }
+}
