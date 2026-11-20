@@ -72,7 +72,7 @@ export async function aiParse(text: string, contacts: string[], env: AiEnv, sign
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.apiKey}` },
     signal,
     body: JSON.stringify({
-      model: env.model ?? "deepseek/deepseek-v4-flash",
+      model: env.model ?? "deepseek/deepseek-v4.1-flash",
       temperature: 0,
       max_tokens: 200,
       thinking: { type: "disabled" },
@@ -114,13 +114,37 @@ export async function handleParse(body: unknown, ip: string, env: AiEnv): Promis
   const text = typeof b.text === "string" ? b.text : "";
   if (!text.trim() || text.length > MAX_TEXT) return { status: 400, json: { error: `text must be 1–${MAX_TEXT} characters` } };
   const contacts = Array.isArray(b.contacts) ? b.contacts.filter((c): c is string => typeof c === "string") : [];
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 20_000);
+  // The provider sometimes stalls for 20s+. Hedge: if the first request hasn't answered after
+  // HEDGE_MS, fire a second one in parallel and take whichever succeeds first.
+  const HEDGE_MS = 3_500, TOTAL_MS = 22_000;
+  const ctrls: AbortController[] = [];
+  const attempt = () => {
+    const c = new AbortController();
+    ctrls.push(c);
+    return aiParse(text, contacts, env, c.signal);
+  };
+  const deadline = setTimeout(() => ctrls.forEach((c) => c.abort()), TOTAL_MS);
   try {
-    return { status: 200, json: await aiParse(text, contacts, env, ctrl.signal) };
+    const first = attempt();
+    // At most two requests: the hedge fires on a timer, or immediately if the first fails fast.
+    const second = new Promise<AiCommand>((resolve, reject) => {
+      let fired = false;
+      const fire = () => {
+        if (fired) return;
+        fired = true;
+        clearTimeout(t);
+        attempt().then(resolve, reject);
+      };
+      const t = setTimeout(fire, HEDGE_MS);
+      first.then(() => clearTimeout(t), fire);
+    });
+    const json = await Promise.any([first, second]);
+    return { status: 200, json };
   } catch (e) {
-    return { status: 502, json: { error: e instanceof Error ? e.message : "AI error" } };
+    const err = e instanceof AggregateError ? e.errors[e.errors.length - 1] : e;
+    return { status: 502, json: { error: err instanceof Error ? err.message : "AI error" } };
   } finally {
-    clearTimeout(timer);
+    clearTimeout(deadline);
+    ctrls.forEach((c) => c.abort());
   }
 }
