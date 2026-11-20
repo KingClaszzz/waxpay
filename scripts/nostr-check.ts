@@ -1,0 +1,11 @@
+process.on("unhandledRejection", (e) => console.log("unhandled:", String(e)));
+import { resolvePubkey, fetchProfiles, fetchPayableFollows, contactKey } from "../src/lib/nostr";
+const id = process.argv[2] ?? "jack@cash.app";
+const pk = await resolvePubkey(id);
+console.log("pubkey", pk.slice(0, 12) + "…");
+const [me] = await fetchProfiles([pk]);
+console.log("profile", me?.name, me?.lud16);
+const t0 = Date.now();
+const f = await fetchPayableFollows(pk, 200);
+console.log("payable follows", f.length, "in", Date.now() - t0, "ms; sample:", f.slice(0, 3).map((p) => `${contactKey(p.name)} → ${p.lud16}`));
+process.exit(0);
